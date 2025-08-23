@@ -51,7 +51,13 @@ const UserDashboard = () => {
     };
   }, [tasks]);
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   // Filter tasks to show only those assigned to the current user
   const userTasks = tasks.filter(task => task.assignedUserId && task.assignedUserId._id === localStorage.getItem('userId'));
@@ -62,64 +68,92 @@ const UserDashboard = () => {
   );
 
   return (
-    <div className="user-dashboard">
-      <h2>My Dashboard</h2>
-      
-      <div className="tab-navigation">
-        <button 
-          className={activeTab === 'tasks' ? 'active' : ''}
-          onClick={() => setActiveTab('tasks')}
-        >
-          My Tasks
-        </button>
-        <button 
-          className={activeTab === 'projects' ? 'active' : ''}
-          onClick={() => setActiveTab('projects')}
-        >
-          My Projects
-        </button>
+    <div className="max-w-7xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">My Dashboard</h1>
+        <p className="mt-2 text-gray-600">Manage your tasks and projects</p>
       </div>
-
-      {activeTab === 'tasks' && (
-        <div className="tab-content">
-          <TaskList 
-            tasks={userTasks} 
-            onTaskUpdated={handleTaskUpdated}
-            onTaskDeleted={handleTaskDeleted}
-          />
+      
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex">
+            <button
+              onClick={() => setActiveTab('tasks')}
+              className={`py-4 px-6 text-sm font-medium border-b-2 ${
+                activeTab === 'tasks'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              My Tasks
+            </button>
+            <button
+              onClick={() => setActiveTab('projects')}
+              className={`py-4 px-6 text-sm font-medium border-b-2 ${
+                activeTab === 'projects'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              My Projects
+            </button>
+          </nav>
         </div>
-      )}
 
-      {activeTab === 'projects' && (
-        <div className="tab-content">
-          <h3>My Projects</h3>
-          {userProjects.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-state-icon">📂</div>
-              <h4>No projects assigned</h4>
-              <p>You are not assigned to any projects yet.</p>
+        <div className="p-6">
+          {activeTab === 'tasks' && (
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-medium text-gray-900">My Tasks</h2>
+                <span className="text-sm text-gray-500">
+                  {userTasks.length} task{userTasks.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <TaskList 
+                tasks={userTasks} 
+                onTaskUpdated={handleTaskUpdated}
+                onTaskDeleted={handleTaskDeleted}
+              />
             </div>
-          ) : (
-            <div className="project-cards">
-              {userProjects.map(project => (
-                <div key={project._id} className="project-card">
-                  <div className="project-header">
-                    <h4>{project.title}</h4>
-                    <span className="project-status">
-                      {project.tasks && project.tasks.length > 0 ? `${project.tasks.length} tasks` : 'No tasks'}
-                    </span>
-                  </div>
-                  <p className="project-description">{project.description}</p>
-                  <div className="project-meta">
-                    <span>Created by: {project.createdBy.name}</span>
-                    <span>Assigned users: {project.assignedUsers.map(u => u.name).join(', ')}</span>
-                  </div>
+          )}
+
+          {activeTab === 'projects' && (
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-medium text-gray-900">My Projects</h2>
+                <span className="text-sm text-gray-500">
+                  {userProjects.length} project{userProjects.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              {userProjects.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 text-4xl mb-3">📂</div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-1">No projects assigned</h3>
+                  <p className="text-gray-500">You are not assigned to any projects yet.</p>
                 </div>
-              ))}
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {userProjects.map(project => (
+                    <div key={project._id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 transition-all hover:shadow-md">
+                      <div className="flex justify-between items-start mb-3">
+                        <h3 className="font-medium text-gray-900">{project.title}</h3>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                          {project.tasks?.length || 0} tasks
+                        </span>
+                      </div>
+                      <p className="text-gray-600 text-sm mb-4">{project.description}</p>
+                      <div className="text-xs text-gray-500 space-y-1">
+                        <p>Created by: {project.createdBy.name}</p>
+                        <p>Assigned users: {project.assignedUsers.map(u => u.name).join(', ')}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

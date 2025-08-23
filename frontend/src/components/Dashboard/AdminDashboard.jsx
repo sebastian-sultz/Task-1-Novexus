@@ -13,7 +13,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('projects');
-  const [taskViewMode, setTaskViewMode] = useState('list'); // 'list' or 'byUser'
+  const [taskViewMode, setTaskViewMode] = useState('list');
 
   useEffect(() => {
     fetchData();
@@ -36,41 +36,35 @@ const AdminDashboard = () => {
     setLoading(false);
   };
 
- const handleProjectCreated = (newProject) => {
-  // Add empty tasks array to new project
-  const projectWithTasks = {
-    ...newProject,
-    tasks: [] // New projects won't have any tasks initially
+  const handleProjectCreated = (newProject) => {
+    const projectWithTasks = {
+      ...newProject,
+      tasks: []
+    };
+    setProjects([...projects, projectWithTasks]);
   };
-  setProjects([...projects, projectWithTasks]);
-};
 
- const handleProjectUpdated = async (updatedProject) => {
-  try {
-    // Fetch the updated project with its tasks
-    const response = await api.get(`/projects/${updatedProject._id}`);
-    setProjects(projects.map(p => p._id === updatedProject._id ? response.data : p));
-  } catch (error) {
-    console.error('Error fetching updated project:', error);
-    // Fallback to the original update if fetching fails
-    setProjects(projects.map(p => p._id === updatedProject._id ? updatedProject : p));
-  }
-};
+  const handleProjectUpdated = async (updatedProject) => {
+    try {
+      const response = await api.get(`/projects/${updatedProject._id}`);
+      setProjects(projects.map(p => p._id === updatedProject._id ? response.data : p));
+    } catch (error) {
+      console.error('Error fetching updated project:', error);
+      setProjects(projects.map(p => p._id === updatedProject._id ? updatedProject : p));
+    }
+  };
+
   const handleProjectDeleted = async (projectId) => {
-  try {
-    // First, delete all tasks associated with this project from the backend
-    await api.delete(`/projects/${projectId}/tasks`);
-    
-    // Then update the frontend state
-    setProjects(projects.filter(p => p._id !== projectId));
-    setTasks(tasks.filter(t => t.projectId._id !== projectId));
-  } catch (error) {
-    console.error('Error deleting project tasks:', error);
-    // Still remove from frontend even if backend fails
-    setProjects(projects.filter(p => p._id !== projectId));
-    setTasks(tasks.filter(t => t.projectId._id !== projectId));
-  }
-};
+    try {
+      await api.delete(`/projects/${projectId}/tasks`);
+      setProjects(projects.filter(p => p._id !== projectId));
+      setTasks(tasks.filter(t => t.projectId._id !== projectId));
+    } catch (error) {
+      console.error('Error deleting project tasks:', error);
+      setProjects(projects.filter(p => p._id !== projectId));
+      setTasks(tasks.filter(t => t.projectId._id !== projectId));
+    }
+  };
 
   const handleTaskCreated = (newTask) => {
     setTasks([...tasks, newTask]);
@@ -80,9 +74,9 @@ const AdminDashboard = () => {
     setTasks(tasks.map(t => t._id === updatedTask._id ? updatedTask : t));
   };
 
- const handleTaskDeleted = (taskId) => {
-  setTasks(tasks.filter(t => t._id !== taskId));
-};
+  const handleTaskDeleted = (taskId) => {
+    setTasks(tasks.filter(t => t._id !== taskId));
+  };
 
   const handleUserCreated = (newUser) => {
     setUsers([...users, newUser]);
@@ -96,94 +90,132 @@ const AdminDashboard = () => {
     })));
   };
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="admin-dashboard">
-      <h2>Admin Dashboard</h2>
-      
-      <div className="tab-navigation">
-        <button 
-          onClick={() => setActiveTab('projects')} 
-          className={activeTab === 'projects' ? 'active' : ''}
-        >
-          Projects
-        </button>
-        <button 
-          onClick={() => setActiveTab('tasks')} 
-          className={activeTab === 'tasks' ? 'active' : ''}
-        >
-          Tasks
-        </button>
-        <button 
-          onClick={() => setActiveTab('users')} 
-          className={activeTab === 'users' ? 'active' : ''}
-        >
-          Users
-        </button>
+    <div className="max-w-7xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+        <p className="mt-2 text-gray-600">Manage projects, tasks, and users in one place</p>
       </div>
-
-      {activeTab === 'projects' && (
-        <div>
-          <CreateProject onProjectCreated={handleProjectCreated} users={users} />
-          <ProjectList 
-            projects={projects} 
-            users={users}
-            onProjectUpdated={handleProjectUpdated}
-            onProjectDeleted={handleProjectDeleted}
-          />
+      
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex">
+            <button
+              onClick={() => setActiveTab('projects')}
+              className={`py-4 px-6 text-sm font-medium border-b-2 ${
+                activeTab === 'projects'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Projects
+            </button>
+            <button
+              onClick={() => setActiveTab('tasks')}
+              className={`py-4 px-6 text-sm font-medium border-b-2 ${
+                activeTab === 'tasks'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Tasks
+            </button>
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`py-4 px-6 text-sm font-medium border-b-2 ${
+                activeTab === 'users'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Users
+            </button>
+          </nav>
         </div>
-      )}
 
-      {activeTab === 'tasks' && (
-        <div>
-          <div className="tasks-header">
-            <CreateTask 
-              projects={projects} 
-              users={users}
-              onTaskCreated={handleTaskCreated}
-            />
-            
-            <div className="view-toggle">
-              <button 
-                className={taskViewMode === 'list' ? 'active' : ''}
-                onClick={() => setTaskViewMode('list')}
-              >
-                List View
-              </button>
-              <button 
-                className={taskViewMode === 'byUser' ? 'active' : ''}
-                onClick={() => setTaskViewMode('byUser')}
-              >
-                Group by User
-              </button>
+        <div className="p-6">
+          {activeTab === 'projects' && (
+            <div className="space-y-6">
+              <CreateProject onProjectCreated={handleProjectCreated} users={users} />
+              <ProjectList 
+                projects={projects} 
+                users={users}
+                onProjectUpdated={handleProjectUpdated}
+                onProjectDeleted={handleProjectDeleted}
+              />
             </div>
-          </div>
-          
-          {taskViewMode === 'list' ? (
-            <TaskList 
-              tasks={tasks} 
-              onTaskUpdated={handleTaskUpdated}
-              onTaskDeleted={handleTaskDeleted}
-              showAssignedUser={true}
-            />
-          ) : (
-            <TaskByUserView 
-              tasks={tasks} 
-              onTaskUpdated={handleTaskUpdated}
-              onTaskDeleted={handleTaskDeleted}
+          )}
+
+          {activeTab === 'tasks' && (
+            <div className="space-y-6">
+              <CreateTask 
+                projects={projects} 
+                users={users}
+                onTaskCreated={handleTaskCreated}
+              />
+              
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h3 className="text-lg font-medium text-gray-900">All Tasks</h3>
+                <div className="flex rounded-md shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => setTaskViewMode('list')}
+                    className={`px-4 py-2 text-sm font-medium rounded-l-md ${
+                      taskViewMode === 'list'
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                    }`}
+                  >
+                    List View
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTaskViewMode('byUser')}
+                    className={`px-4 py-2 text-sm font-medium rounded-r-md ${
+                      taskViewMode === 'byUser'
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                    }`}
+                  >
+                    Group by User
+                  </button>
+                </div>
+              </div>
+              
+              {taskViewMode === 'list' ? (
+                <TaskList 
+                  tasks={tasks} 
+                  onTaskUpdated={handleTaskUpdated}
+                  onTaskDeleted={handleTaskDeleted}
+                  showAssignedUser={true}
+                />
+              ) : (
+                <TaskByUserView 
+                  tasks={tasks} 
+                  onTaskUpdated={handleTaskUpdated}
+                  onTaskDeleted={handleTaskDeleted}
+                />
+              )}
+            </div>
+          )}
+
+          {activeTab === 'users' && (
+            <UserManagement 
+              users={users}
+              onUserCreated={handleUserCreated}
+              onUserDeleted={handleUserDeleted}
             />
           )}
         </div>
-      )}
-
-      {activeTab === 'users' && (
-        <UserManagement 
-          users={users}
-          onUserCreated={handleUserCreated}
-          onUserDeleted={handleUserDeleted}
-        />
-      )}
+      </div>
     </div>
   );
 };

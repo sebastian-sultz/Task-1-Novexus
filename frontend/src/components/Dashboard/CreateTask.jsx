@@ -55,65 +55,89 @@ const CreateTask = ({ projects, users, onTaskCreated }) => {
   };
 
   return (
-    <div style={{ marginBottom: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '5px' }}>
-      <h3>Create New Task</h3>
-      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '10px' }}>
+    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <h3 className="text-lg font-medium text-gray-900 mb-4">Create New Task</h3>
+      {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">{error}</div>}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="task-title" className="block text-sm font-medium text-gray-700 mb-1">
+            Task Title
+          </label>
           <input
             type="text"
+            id="task-title"
             placeholder="Task Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            style={{ width: '100%', padding: '8px' }}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
-        <div style={{ marginBottom: '10px' }}>
+        <div>
+          <label htmlFor="task-description" className="block text-sm font-medium text-gray-700 mb-1">
+            Task Description
+          </label>
           <textarea
+            id="task-description"
             placeholder="Task Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
-            style={{ width: '100%', padding: '8px', minHeight: '80px' }}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Deadline: </label>
+        <div>
+          <label htmlFor="task-deadline" className="block text-sm font-medium text-gray-700 mb-1">
+            Deadline
+          </label>
           <input
             type="date"
+            id="task-deadline"
             value={deadline}
             min={today}
             onChange={(e) => setDeadline(e.target.value)}
             required
-            style={{ padding: '8px' }}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Project: </label>
-          <select 
-            value={projectId} 
-            onChange={(e) => setProjectId(e.target.value)}
-            style={{ padding: '8px' }}
-          >
-            {projects.map(project => (
-              <option key={project._id} value={project._id}>{project.title}</option>
-            ))}
-          </select>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="task-project" className="block text-sm font-medium text-gray-700 mb-1">
+              Project
+            </label>
+            <select 
+              id="task-project"
+              value={projectId} 
+              onChange={(e) => setProjectId(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              {projects.map(project => (
+                <option key={project._id} value={project._id}>{project.title}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="task-assignee" className="block text-sm font-medium text-gray-700 mb-1">
+              Assign to
+            </label>
+            <select 
+              id="task-assignee"
+              value={assignedUserId} 
+              onChange={(e) => setAssignedUserId(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              {users.map(user => (
+                <option key={user._id} value={user._id}>{user.name} ({user.email})</option>
+              ))}
+            </select>
+          </div>
         </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Assign to: </label>
-          <select 
-            value={assignedUserId} 
-            onChange={(e) => setAssignedUserId(e.target.value)}
-            style={{ padding: '8px' }}
-          >
-            {users.map(user => (
-              <option key={user._id} value={user._id}>{user.name} ({user.email})</option>
-            ))}
-          </select>
-        </div>
-        <button type="submit" disabled={loading}>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           {loading ? 'Creating...' : 'Create Task'}
         </button>
       </form>

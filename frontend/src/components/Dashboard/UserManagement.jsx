@@ -66,24 +66,29 @@ const UserManagement = ({ users, onUserCreated, onUserDeleted }) => {
   };
 
   return (
-    <div className="user-management">
-      <div className="section-header">
-        <h3>User Management</h3>
-        <button className="btn-primary" onClick={openCreateModal}>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h3 className="text-lg font-medium text-gray-900">User Management</h3>
+        <button 
+          onClick={openCreateModal}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        >
           + Add New User
         </button>
       </div>
 
-      {error && <div className="error-message">{error}</div>}
+      {error && <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">{error}</div>}
 
       <Modal 
         isOpen={showCreateModal} 
         onClose={closeCreateModal}
         title="Create New User"
       >
-        <form onSubmit={handleCreateUser} className="user-form">
-          <div className="form-group">
-            <label htmlFor="name">Name</label>
+        <form onSubmit={handleCreateUser} className="space-y-4">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              Name
+            </label>
             <input
               id="name"
               type="text"
@@ -91,11 +96,14 @@ const UserManagement = ({ users, onUserCreated, onUserDeleted }) => {
               onChange={(e) => setName(e.target.value)}
               required
               disabled={loading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
             />
           </div>
           
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
             <input
               id="email"
               type="email"
@@ -103,11 +111,14 @@ const UserManagement = ({ users, onUserCreated, onUserDeleted }) => {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
             />
           </div>
           
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
             <input
               id="password"
               type="password"
@@ -115,35 +126,39 @@ const UserManagement = ({ users, onUserCreated, onUserDeleted }) => {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={loading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
             />
           </div>
           
-          <div className="form-group">
-            <label htmlFor="role">Role</label>
+          <div>
+            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+              Role
+            </label>
             <select 
               id="role"
               value={role} 
               onChange={(e) => setRole(e.target.value)}
               disabled={loading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
             >
               <option value="user">User</option>
               <option value="admin">Admin</option>
             </select>
           </div>
           
-          <div className="form-actions">
+          <div className="flex justify-end space-x-3 pt-4">
             <button 
               type="button" 
               onClick={closeCreateModal}
               disabled={loading}
-              className="btn-secondary"
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
             >
               Cancel
             </button>
             <button 
               type="submit" 
               disabled={loading}
-              className="btn-primary"
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
             >
               {loading ? 'Creating...' : 'Create User'}
             </button>
@@ -151,30 +166,65 @@ const UserManagement = ({ users, onUserCreated, onUserDeleted }) => {
         </form>
       </Modal>
 
-      <div className="users-list">
-        <h4>All Users ({users.length})</h4>
+      <div>
+        <h4 className="text-md font-medium text-gray-900 mb-4">All Users ({users.length})</h4>
         {users.length === 0 ? (
-          <p className="no-data">No users found.</p>
+          <div className="text-center py-8 bg-white rounded-lg border border-gray-200">
+            <div className="text-gray-400 text-4xl mb-3">👥</div>
+            <p className="text-gray-500">No users found.</p>
+          </div>
         ) : (
-          <div className="user-cards">
-            {users.map(user => (
-              <div key={user._id} className="user-card">
-                <div className="user-info">
-                  <h5>{user.name}</h5>
-                  <p className="user-email">{user.email}</p>
-                  <span className={`user-role ${user.role}`}>{user.role}</span>
-                </div>
-                <div className="user-actions">
-                  <button 
-                    onClick={() => handleDeleteUser(user._id, user.name)} 
-                    disabled={loading}
-                    className="btn-danger"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Role
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {users.map(user => (
+                    <tr key={user._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="h-10 w-10 flex items-center justify-center bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full text-white font-semibold">
+                            {user.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                            <div className="text-sm text-gray-500">{user.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <button 
+                          onClick={() => handleDeleteUser(user._id, user.name)} 
+                          disabled={loading}
+                          className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

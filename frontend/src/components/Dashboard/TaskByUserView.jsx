@@ -92,16 +92,26 @@ const TaskByUserView = ({ tasks, onTaskUpdated, onTaskDeleted }) => {
     }
   }, [statusFilter, filteredTasksByUser]);
 
+  // Get status badge color
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'To Do': return 'bg-gray-100 text-gray-800';
+      case 'In Progress': return 'bg-blue-100 text-blue-800';
+      case 'Done': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
-    <div className="task-by-user-view">
-      <div className="view-controls">
-        <div className="filter-group">
-          <label htmlFor="statusFilter">Filter by Status:</label>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <label htmlFor="statusFilter" className="text-sm font-medium text-gray-700">Filter by Status:</label>
           <select 
             id="statusFilter"
             value={statusFilter} 
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="filter-select"
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
           >
             <option value="all">All Statuses</option>
             <option value="To Do">To Do</option>
@@ -110,110 +120,117 @@ const TaskByUserView = ({ tasks, onTaskUpdated, onTaskDeleted }) => {
           </select>
         </div>
         
-        <div className="result-count">
+        <div className="text-sm text-gray-500">
           Showing {Object.keys(filteredTasksByUser).length} users with tasks
         </div>
       </div>
 
       {Object.keys(filteredTasksByUser).length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-state-icon">👥</div>
-          <h3>No tasks found</h3>
-          <p>There are no tasks matching your filter criteria.</p>
+        <div className="text-center py-12">
+          <div className="text-gray-400 text-4xl mb-3">👥</div>
+          <h3 className="text-lg font-medium text-gray-900 mb-1">No tasks found</h3>
+          <p className="text-gray-500">There are no tasks matching your filter criteria.</p>
           <button 
             onClick={() => setStatusFilter('all')}
-            className="btn btn-primary"
+            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
             Clear Filter
           </button>
         </div>
       ) : (
-        <div className="user-cards-container">
+        <div className="space-y-4">
           {Object.values(filteredTasksByUser).map(({ user: userData, tasks: userTasks }) => (
-            <div key={userData._id} className="user-task-card">
+            <div key={userData._id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div 
-                className="user-header"
+                className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => toggleUserExpansion(userData._id)}
               >
-                <div className="user-info">
-                  <div className="user-avatar">
+                <div className="flex items-center">
+                  <div className="h-10 w-10 flex items-center justify-center bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full text-white font-semibold">
                     {userData.name.charAt(0).toUpperCase()}
                   </div>
-                  <div className="user-details">
-                    <h3 className="user-name">{userData.name}</h3>
-                    <p className="user-email">{userData.email}</p>
-                    <div className="user-stats">
-                      <span className="task-count">
-                        {userTasks.length} task{userTasks.length !== 1 ? 's' : ''}
-                        {statusFilter !== 'all' && ` (${statusFilter})`}
-                      </span>
+                  <div className="ml-3">
+                    <h3 className="font-medium text-gray-900">{userData.name}</h3>
+                    <p className="text-sm text-gray-500">{userData.email}</p>
+                    <div className="text-xs text-gray-400 mt-1">
+                      {userTasks.length} task{userTasks.length !== 1 ? 's' : ''}
+                      {statusFilter !== 'all' && ` (${statusFilter})`}
                     </div>
                   </div>
                 </div>
-                <div className="user-actions">
-                  <span className={`expand-icon ${expandedUsers[userData._id] ? 'expanded' : ''}`}>
-                    ▼
-                  </span>
+                <div className={`transform transition-transform ${expandedUsers[userData._id] ? 'rotate-180' : ''}`}>
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
               </div>
 
               {expandedUsers[userData._id] && (
-                <div className="user-tasks-list">
-                  {userTasks.map(task => (
-                    <div key={task._id} className={`task-item ${task.status.toLowerCase().replace(' ', '-')}`}>
-                      <div className="task-main">
-                        <h4 className="task-title">{task.title}</h4>
-                        <p className="task-description">{task.description}</p>
-                        <div className="task-meta">
-                          <span className="task-project">
-                            Project: {task.projectId?.title || 'Unassigned'}
-                          </span>
-                          <span className="task-deadline">
-                            Due: {new Date(task.deadline).toLocaleDateString()}
-                          </span>
-                          <span className={`status-indicator status-${task.status.toLowerCase().replace(' ', '-')}`}>
-                            {task.status}
-                          </span>
+                <div className="border-t border-gray-200 p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {userTasks.map(task => (
+                      <div key={task._id} className="bg-gray-50 p-3 rounded-md">
+                        <div className="mb-2">
+                          <h4 className="font-medium text-gray-900">{task.title}</h4>
+                          <p className="text-sm text-gray-600">{task.description}</p>
+                        </div>
+                        
+                        <div className="text-xs text-gray-500 space-y-1 mb-3">
+                          <div className="flex justify-between">
+                            <span>Project:</span>
+                            <span className="font-medium">{task.projectId?.title || 'Unassigned'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Due:</span>
+                            <span className="font-medium">{new Date(task.deadline).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Status:</span>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
+                              {task.status}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2">
+                          {/* Only show status dropdown to the assigned user */}
+                          {user._id === task.assignedUserId._id && (
+                            <select 
+                              value={task.status} 
+                              onChange={(e) => handleStatusChange(task._id, e.target.value)}
+                              disabled={loading}
+                              className="flex-1 min-w-[120px] text-xs px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                            >
+                              <option value="To Do">To Do</option>
+                              <option value="In Progress">In Progress</option>
+                              <option value="Done">Done</option>
+                            </select>
+                          )}
+                          
+                          {/* Show reopen button to admins for completed tasks */}
+                          {user.role === 'admin' && task.status === 'Done' && (
+                            <button 
+                              onClick={() => handleReopenTask(task)}
+                              disabled={loading}
+                              className="px-2 py-1 bg-amber-600 text-white text-xs rounded-md hover:bg-amber-700 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:opacity-50"
+                            >
+                              Reopen
+                            </button>
+                          )}
+                          
+                          {user.role === 'admin' && (
+                            <button 
+                              onClick={() => onTaskDeleted(task._id)}
+                              disabled={loading}
+                              className="px-2 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700 focus:outline-none focus:ring-1 focus:ring-red-500 disabled:opacity-50"
+                            >
+                              Delete
+                            </button>
+                          )}
                         </div>
                       </div>
-                      <div className="task-actions">
-                        {/* Only show status dropdown to the assigned user */}
-                        {user._id === task.assignedUserId._id && (
-                          <select 
-                            value={task.status} 
-                            onChange={(e) => handleStatusChange(task._id, e.target.value)}
-                            className="status-select"
-                            disabled={loading}
-                          >
-                            <option value="To Do">To Do</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Done">Done</option>
-                          </select>
-                        )}
-                        
-                        {/* Show reopen button to admins for completed tasks */}
-                        {user.role === 'admin' && task.status === 'Done' && (
-                          <button 
-                            onClick={() => handleReopenTask(task)}
-                            disabled={loading}
-                            className="btn btn-warning btn-sm"
-                          >
-                            Reopen
-                          </button>
-                        )}
-                        
-                        {user.role === 'admin' && (
-                          <button 
-                            onClick={() => onTaskDeleted(task._id)}
-                            disabled={loading}
-                            className="btn btn-danger btn-sm"
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
