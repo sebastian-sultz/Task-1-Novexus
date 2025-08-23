@@ -13,15 +13,18 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
+    const userId = localStorage.getItem('userId');
+    
+    if (token && userId) {
       // Verify token and get user info
       const fetchUser = async () => {
         try {
           const response = await api.get('/auth/me');
           setUser(response.data);
         } catch (error) {
-          console.error(error);
+          console.error('Error fetching user:', error);
           localStorage.removeItem('token');
+          localStorage.removeItem('userId');
         }
         setLoading(false);
       };
@@ -36,8 +39,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/auth/login', { email, password });
       const { token, ...userData } = response.data;
+      
       localStorage.setItem('token', token);
+      localStorage.setItem('userId', userData._id);
       setUser(userData);
+      
       return { success: true };
     } catch (error) {
       return { 
@@ -47,12 +53,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (name, email, password, role) => {
+  const register = async (name, email, password) => {
     try {
-      const response = await api.post('/auth/register', { name, email, password, role });
+      const response = await api.post('/auth/register', { name, email, password });
       const { token, ...userData } = response.data;
+      
       localStorage.setItem('token', token);
+      localStorage.setItem('userId', userData._id);
       setUser(userData);
+      
       return { success: true };
     } catch (error) {
       return { 
@@ -64,6 +73,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userId');
     setUser(null);
   };
 
