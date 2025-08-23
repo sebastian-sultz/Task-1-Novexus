@@ -24,12 +24,29 @@ const register = async (req, res) => {
       // First user is automatically an admin
       userRole = 'admin';
     } else if (role === 'admin') {
-      // Subsequent admin creation requires admin privileges
-      // Check if user is authenticated and is admin
-      if (!req.user || req.user.role !== 'admin') {
-        return res.status(403).json({ message: 'Not authorized to create admin users' });
+      // For subsequent requests, check if the current user is admin
+      // We need to manually verify the token for registration route
+      let token;
+      if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
       }
-      userRole = 'admin';
+      
+      if (!token) {
+        return res.status(401).json({ message: 'Not authorized, no token' });
+      }
+      
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const currentUser = await User.findById(decoded.id).select('-password');
+        
+        if (!currentUser || currentUser.role !== 'admin') {
+          return res.status(403).json({ message: 'Not authorized to create admin users' });
+        }
+        
+        userRole = 'admin';
+      } catch (error) {
+        return res.status(401).json({ message: 'Not authorized, token failed' });
+      }
     }
     
     // Create user
@@ -46,7 +63,7 @@ const register = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        token: generateToken(user._id)
+        token: userCount > 0 ? generateToken(user._id) : undefined // Don't return token for admin-created users
       });
     } else {
       res.status(400).json({ message: 'Invalid user data' });

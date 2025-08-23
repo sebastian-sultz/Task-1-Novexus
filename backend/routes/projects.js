@@ -1,5 +1,5 @@
 const express = require('express');
-const { createProject, getProjects, updateProject, deleteProject } = require('../controllers/projectController');
+const { createProject, getProjects, getProject, updateProject, deleteProject } = require('../controllers/projectController');
 const { protect } = require('../middleware/auth');
 
 const router = express.Router();
@@ -9,6 +9,7 @@ router.route('/')
   .get(protect, getProjects);
 
 router.route('/:id')
+  .get(protect, getProject)
   .put(protect, updateProject)
   .delete(protect, deleteProject);
 

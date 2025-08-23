@@ -8,7 +8,7 @@ const createTask = async (req, res) => {
     const task = await Task.create({
       title,
       description,
-      status,
+      status: status || 'To Do',
       deadline,
       projectId,
       assignedUserId
@@ -45,6 +45,28 @@ const getTasks = async (req, res) => {
   }
 };
 
+// Get single task
+const getTask = async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id)
+      .populate('projectId', 'title')
+      .populate('assignedUserId', 'name email');
+    
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    
+    // Check if user is admin or assigned to the task
+    if (req.user.role !== 'admin' && task.assignedUserId._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to view this task' });
+    }
+    
+    res.status(200).json(task);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Update a task
 const updateTask = async (req, res) => {
   try {
@@ -59,9 +81,43 @@ const updateTask = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to update this task' });
     }
     
+    // If user is not admin, only allow status updates
+    let updateData = req.body;
+    if (req.user.role !== 'admin') {
+      updateData = { status: req.body.status };
+    }
+    
     const updatedTask = await Task.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
+      { new: true, runValidators: true }
+    )
+    .populate('projectId', 'title')
+    .populate('assignedUserId', 'name email');
+    
+    res.status(200).json(updatedTask);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Submit a task (mark as done)
+const submitTask = async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
+    
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    
+    // Check if user is the assigned user
+    if (task.assignedUserId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to submit this task' });
+    }
+    
+    const updatedTask = await Task.findByIdAndUpdate(
+      req.params.id,
+      { status: 'Done' },
       { new: true, runValidators: true }
     )
     .populate('projectId', 'title')
@@ -94,4 +150,4 @@ const deleteTask = async (req, res) => {
   }
 };
 
-module.exports = { createTask, getTasks, updateTask, deleteTask };
+module.exports = { createTask, getTasks, getTask, updateTask, submitTask, deleteTask };
