@@ -1,4 +1,6 @@
 const Project = require('../models/Project');
+const Task = require('../models/Task');
+
 
 // Create a new project
 const createProject = async (req, res) => {
@@ -24,6 +26,8 @@ const createProject = async (req, res) => {
 };
 
 // Get all projects (admin sees all, users see only assigned projects)
+// In the getProjects function, ensure users only see their assigned projects
+// Get all projects (admin sees all, users see only assigned projects)
 const getProjects = async (req, res) => {
   try {
     let projects;
@@ -34,16 +38,25 @@ const getProjects = async (req, res) => {
         .populate('assignedUsers', 'name email');
     } else {
       projects = await Project.find({ 
-        $or: [
-          { createdBy: req.user._id },
-          { assignedUsers: req.user._id }
-        ]
+        assignedUsers: req.user._id  // Only projects where user is assigned
       })
       .populate('createdBy', 'name email')
       .populate('assignedUsers', 'name email');
     }
     
-    res.status(200).json(projects);
+    // Get tasks for each project
+    const projectsWithTasks = await Promise.all(projects.map(async (project) => {
+      const tasks = await Task.find({ projectId: project._id })
+        .populate('projectId', 'title')
+        .populate('assignedUserId', 'name email');
+      
+      return {
+        ...project.toObject(),
+        tasks
+      };
+    }));
+    
+    res.status(200).json(projectsWithTasks);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -67,7 +80,17 @@ const getProject = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to view this project' });
     }
     
-    res.status(200).json(project);
+    // Get tasks for this project
+    const tasks = await Task.find({ projectId: project._id })
+      .populate('projectId', 'title')
+      .populate('assignedUserId', 'name email');
+    
+    const projectWithTasks = {
+      ...project.toObject(),
+      tasks
+    };
+    
+    res.status(200).json(projectWithTasks);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -133,6 +156,7 @@ const assignUsersToProject = async (req, res) => {
 };
 
 // Delete a project
+// Delete a project
 const deleteProject = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
@@ -146,8 +170,13 @@ const deleteProject = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to delete this project' });
     }
     
+    // Delete all tasks associated with this project first
+    await Task.deleteMany({ projectId: req.params.id });
+    
+    // Then delete the project
     await Project.findByIdAndDelete(req.params.id);
-    res.status(200).json({ message: 'Project removed' });
+    
+    res.status(200).json({ message: 'Project and all associated tasks removed' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

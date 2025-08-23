@@ -1,5 +1,5 @@
 const express = require('express');
-const { createTask, getTasks, getTask, updateTask, submitTask, deleteTask } = require('../controllers/taskController');
+const { createTask, getTasks, getTask, updateTask, submitTask, deleteTask, reopenTask } = require('../controllers/taskController');
 const { protect } = require('../middleware/auth');
 
 const router = express.Router();
@@ -13,7 +13,8 @@ router.route('/:id')
   .put(protect, updateTask)
   .delete(protect, deleteTask);
 
-// Add submit route
+// Add submit and reopen routes
 router.put('/:id/submit', protect, submitTask);
+router.put('/:id/reopen', protect, reopenTask);
 
 module.exports = router;
