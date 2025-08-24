@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { RiMailLine, RiLock2Line, RiEyeLine, RiEyeOffLine, RiUserLine } from 'react-icons/ri';
+import StarBorder from '../Common/StarBorder';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -124,13 +125,15 @@ const Register = () => {
 
               {/* Submit Button */}
               <div>
-                <button
+               <StarBorder as='button'
                   type="submit"
-                  disabled={loading}
-                  className="w-full flex justify-center py-2.5 sm:py-3 px-4 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-purple-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all transform hover:scale-[1.01] disabled:opacity-50"
+                  loading={loading}
+                  className='w-full'
                 >
+               
+                
                   {loading ? 'Creating Account...' : 'Create Account'}
-                </button>
+                </StarBorder>
               </div>
             </form>
 

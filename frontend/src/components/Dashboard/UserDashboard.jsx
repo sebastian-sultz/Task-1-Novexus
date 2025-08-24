@@ -31,53 +31,46 @@ const UserDashboard = () => {
       setProjects(projectsRes.data);
       
       // Calculate user stats
-      const userId = localStorage.getItem('userId');
-      const userTasks = tasksRes.data.filter(task => task.assignedUserId && task.assignedUserId._id === userId);
-      
-      const completedTasks = userTasks.filter(task => task.status === 'Done').length;
-      const overdueTasks = userTasks.filter(task => {
-        return new Date(task.deadline) < new Date() && task.status !== 'Done';
-      }).length;
-      const inProgressTasks = userTasks.filter(task => task.status === 'In Progress').length;
-      
-      setUserStats({
-        totalTasks: userTasks.length,
-        completedTasks,
-        overdueTasks,
-        inProgressTasks,
-      });
+      calculateUserStats(tasksRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
     setLoading(false);
   };
 
-  // This function will be called when a task is deleted elsewhere
-  const handleTaskUpdated = (updatedTask) => {
-    setTasks(tasks.map(t => t._id === updatedTask._id ? updatedTask : t));
+  const calculateUserStats = (tasksData) => {
+    const userId = localStorage.getItem('userId');
+    const userTasks = tasksData.filter(task => task.assignedUserId && task.assignedUserId._id === userId);
     
-    // Update stats if task status changed
-    if (updatedTask.assignedUserId && updatedTask.assignedUserId._id === localStorage.getItem('userId')) {
-      const userTasks = tasks.filter(task => task.assignedUserId && task.assignedUserId._id === localStorage.getItem('userId'));
-      
-      const completedTasks = userTasks.filter(task => task.status === 'Done').length;
-      const overdueTasks = userTasks.filter(task => {
-        return new Date(task.deadline) < new Date() && task.status !== 'Done';
-      }).length;
-      const inProgressTasks = userTasks.filter(task => task.status === 'In Progress').length;
-      
-      setUserStats(prev => ({
-        ...prev,
-        completedTasks,
-        overdueTasks,
-        inProgressTasks,
-      }));
-    }
+    const completedTasks = userTasks.filter(task => task.status === 'Done').length;
+    const overdueTasks = userTasks.filter(task => {
+      return new Date(task.deadline) < new Date() && task.status !== 'Done';
+    }).length;
+    const inProgressTasks = userTasks.filter(task => task.status === 'In Progress').length;
+    
+    setUserStats({
+      totalTasks: userTasks.length,
+      completedTasks,
+      overdueTasks,
+      inProgressTasks,
+    });
+  };
+
+  // This function will be called when a task is updated elsewhere
+  const handleTaskUpdated = (updatedTask) => {
+    const updatedTasks = tasks.map(t => t._id === updatedTask._id ? updatedTask : t);
+    setTasks(updatedTasks);
+    
+    // Recalculate stats with the updated tasks
+    calculateUserStats(updatedTasks);
   };
 
   const handleTaskDeleted = (taskId) => {
-    setTasks(tasks.filter(t => t._id !== taskId));
-    setUserStats(prev => ({ ...prev, totalTasks: prev.totalTasks - 1 }));
+    const updatedTasks = tasks.filter(t => t._id !== taskId);
+    setTasks(updatedTasks);
+    
+    // Recalculate stats with the updated tasks
+    calculateUserStats(updatedTasks);
   };
 
   // Listen for custom events when tasks are deleted elsewhere
@@ -111,39 +104,79 @@ const UserDashboard = () => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">My Dashboard</h1>
         <p className="mt-2 text-gray-600">Manage your tasks and projects</p>
       </div>
       
-      {/* Stats Cards */}
+      {/* Stats Cards - Enhanced Design */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="text-center">
+        {/* Total Tasks Card */}
+        <Card className="bg-white border-l-4 border-indigo-500">
           <div className="p-4">
-            <div className="text-3xl font-bold text-indigo-600">{userStats.totalTasks}</div>
-            <div className="text-sm text-gray-600 mt-1">Total Tasks</div>
+            <div className="flex items-center">
+              <div className="rounded-full bg-indigo-100 p-3 mr-4">
+                <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900">{userStats.totalTasks}</h3>
+                <p className="text-sm text-gray-500">Total Tasks</p>
+              </div>
+            </div>
           </div>
         </Card>
-        
-        <Card className="text-center">
+
+        {/* Completed Tasks Card */}
+        <Card className="bg-white border-l-4 border-green-500">
           <div className="p-4">
-            <div className="text-3xl font-bold text-green-600">{userStats.completedTasks}</div>
-            <div className="text-sm text-gray-600 mt-1">Completed</div>
+            <div className="flex items-center">
+              <div className="rounded-full bg-green-100 p-3 mr-4">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900">{userStats.completedTasks}</h3>
+                <p className="text-sm text-gray-500">Completed</p>
+              </div>
+            </div>
           </div>
         </Card>
-        
-        <Card className="text-center">
+
+        {/* In Progress Tasks Card */}
+        <Card className="bg-white border-l-4 border-blue-500">
           <div className="p-4">
-            <div className="text-3xl font-bold text-blue-600">{userStats.inProgressTasks}</div>
-            <div className="text-sm text-gray-600 mt-1">In Progress</div>
+            <div className="flex items-center">
+              <div className="rounded-full bg-blue-100 p-3 mr-4">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900">{userStats.inProgressTasks}</h3>
+                <p className="text-sm text-gray-500">In Progress</p>
+              </div>
+            </div>
           </div>
         </Card>
-        
-        <Card className="text-center">
+
+        {/* Overdue Tasks Card */}
+        <Card className="bg-white border-l-4 border-red-500">
           <div className="p-4">
-            <div className="text-3xl font-bold text-red-600">{userStats.overdueTasks}</div>
-            <div className="text-sm text-gray-600 mt-1">Overdue</div>
+            <div className="flex items-center">
+              <div className="rounded-full bg-red-100 p-3 mr-4">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900">{userStats.overdueTasks}</h3>
+                <p className="text-sm text-gray-500">Overdue</p>
+              </div>
+            </div>
           </div>
         </Card>
       </div>

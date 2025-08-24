@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { RiMailLine, RiLock2Line, RiEyeLine, RiEyeOffLine } from 'react-icons/ri';
 import Button from '../Common/Button';
+import StarBorder from '../Common/StarBorder';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -106,7 +107,7 @@ const Login = () => {
               </div>
 
               {/* Remember me and Forgot password */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
+              {/* <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
                 <div className="flex items-center">
                   <input
                     id="remember-me"
@@ -130,17 +131,17 @@ const Login = () => {
                     Forgot password?
                   </Link>
                 </div>
-              </div>
+              </div> */}
 
               {/* Submit Button */}
               <div>
-                <Button
+                <StarBorder as='button'
                   type="submit"
                   loading={loading}
-                  className="w-full"
+                  className='w-full'
                 >
-                  Sign in
-                </Button>
+                  Sign In
+                </StarBorder>
               </div>
             </form>
 

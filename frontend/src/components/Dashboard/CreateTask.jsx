@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import Card from '../Common/Card';
 import Button from '../Common/Button';
+import StarBorder from '../Common/StarBorder';
 
 const CreateTask = ({ projects, users, onTaskCreated }) => {
   const [title, setTitle] = useState('');
@@ -138,13 +139,13 @@ const CreateTask = ({ projects, users, onTaskCreated }) => {
               </select>
             </div>
           </div>
-          <Button
+          <StarBorder as='button'
             type="submit"
             loading={loading}
-            className="w-full"
+           className='w-full'
           >
             Create Task
-          </Button>
+          </StarBorder>
         </form>
       </Card.Body>
     </Card>
