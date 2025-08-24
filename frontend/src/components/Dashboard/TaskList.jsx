@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import ReopenTaskModal from './ReopenTaskModal';
+import Card from '../Common/Card';
+import Button from '../Common/Button';
 
 const TaskList = ({ tasks, onTaskUpdated, onTaskDeleted, showAssignedUser = false }) => {
   const [loading, setLoading] = useState(false);
@@ -134,7 +136,7 @@ const TaskList = ({ tasks, onTaskUpdated, onTaskDeleted, showAssignedUser = fals
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {tasks.map(task => (
-            <div key={task._id} className={`bg-white rounded-lg shadow-sm border ${isOverdue(task) ? 'border-red-300' : isDueToday(task) ? 'border-amber-300' : 'border-gray-200'} p-4 transition-all hover:shadow-md`}>
+            <Card key={task._id} className={`${isOverdue(task) ? 'border-red-300' : isDueToday(task) ? 'border-amber-300' : ''}`}>
               <div className="flex justify-between items-start mb-3">
                 <h4 className="font-medium text-gray-900">{task.title}</h4>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
@@ -165,7 +167,7 @@ const TaskList = ({ tasks, onTaskUpdated, onTaskDeleted, showAssignedUser = fals
               
               <div className="flex flex-wrap gap-2">
                 {/* Only show status dropdown to the assigned user */}
-                {user._id === task.assignedUserId._id && (
+                {user._id === task.assignedUserId._id ? (
                   <select 
                     value={task.status} 
                     onChange={(e) => handleStatusChange(task._id, e.target.value)}
@@ -176,41 +178,46 @@ const TaskList = ({ tasks, onTaskUpdated, onTaskDeleted, showAssignedUser = fals
                     <option value="In Progress">In Progress</option>
                     <option value="Done">Done</option>
                   </select>
+                ) : (
+                  <span className="status-text">{task.status}</span>
                 )}
                 
                 {/* Only show submit button to the assigned user */}
                 {task.status !== 'Done' && user._id === task.assignedUserId._id && (
-                  <button 
+                  <Button
+                    variant="success"
+                    size="sm"
                     onClick={() => handleSubmitTask(task._id)} 
-                    disabled={loading}
-                    className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50"
+                    loading={loading}
                   >
-                    Submit
-                  </button>
+                    Submit Task
+                  </Button>
                 )}
                 
                 {/* Show reopen button to admins for completed tasks */}
                 {task.status === 'Done' && user.role === 'admin' && (
-                  <button 
+                  <Button
+                    variant="warning"
+                    size="sm"
                     onClick={() => handleReopenTask(task)} 
-                    disabled={loading}
-                    className="px-3 py-1 bg-amber-600 text-white text-sm rounded-md hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 disabled:opacity-50"
+                    loading={loading}
                   >
-                    Reopen
-                  </button>
+                    Reopen Task
+                  </Button>
                 )}
                 
                 {user.role === 'admin' && (
-                  <button 
+                  <Button
+                    variant="danger"
+                    size="sm"
                     onClick={() => handleDelete(task._id)} 
-                    disabled={loading}
-                    className="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+                    loading={loading}
                   >
                     Delete
-                  </button>
+                  </Button>
                 )}
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import ReopenTaskModal from './ReopenTaskModal';
+import Card from '../Common/Card';
+import Button from '../Common/Button';
 
 const TaskByUserView = ({ tasks, onTaskUpdated, onTaskDeleted }) => {
   const { user } = useAuth();
@@ -130,17 +132,17 @@ const TaskByUserView = ({ tasks, onTaskUpdated, onTaskDeleted }) => {
           <div className="text-gray-400 text-4xl mb-3">👥</div>
           <h3 className="text-lg font-medium text-gray-900 mb-1">No tasks found</h3>
           <p className="text-gray-500">There are no tasks matching your filter criteria.</p>
-          <button 
+          <Button 
             onClick={() => setStatusFilter('all')}
-            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="mt-4"
           >
             Clear Filter
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">
           {Object.values(filteredTasksByUser).map(({ user: userData, tasks: userTasks }) => (
-            <div key={userData._id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <Card key={userData._id} className="overflow-hidden">
               <div 
                 className="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => toggleUserExpansion(userData._id)}
@@ -169,7 +171,7 @@ const TaskByUserView = ({ tasks, onTaskUpdated, onTaskDeleted }) => {
                 <div className="border-t border-gray-200 p-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {userTasks.map(task => (
-                      <div key={task._id} className="bg-gray-50 p-3 rounded-md">
+                      <Card key={task._id} className="p-3">
                         <div className="mb-2">
                           <h4 className="font-medium text-gray-900">{task.title}</h4>
                           <p className="text-sm text-gray-600">{task.description}</p>
@@ -209,31 +211,33 @@ const TaskByUserView = ({ tasks, onTaskUpdated, onTaskDeleted }) => {
                           
                           {/* Show reopen button to admins for completed tasks */}
                           {user.role === 'admin' && task.status === 'Done' && (
-                            <button 
+                            <Button
+                              variant="warning"
+                              size="sm"
                               onClick={() => handleReopenTask(task)}
-                              disabled={loading}
-                              className="px-2 py-1 bg-amber-600 text-white text-xs rounded-md hover:bg-amber-700 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:opacity-50"
+                              loading={loading}
                             >
                               Reopen
-                            </button>
+                            </Button>
                           )}
                           
                           {user.role === 'admin' && (
-                            <button 
+                            <Button
+                              variant="danger"
+                              size="sm"
                               onClick={() => onTaskDeleted(task._id)}
-                              disabled={loading}
-                              className="px-2 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700 focus:outline-none focus:ring-1 focus:ring-red-500 disabled:opacity-50"
+                              loading={loading}
                             >
                               Delete
-                            </button>
+                            </Button>
                           )}
                         </div>
-                      </div>
+                      </Card>
                     ))}
                   </div>
                 </div>
               )}
-            </div>
+            </Card>
           ))}
         </div>
       )}

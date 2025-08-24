@@ -6,6 +6,8 @@ import ProjectList from './ProjectList';
 import TaskList from './TaskList';
 import TaskByUserView from './TaskByUserView';
 import UserManagement from './UserManagement';
+import Card from '../Common/Card';
+import Button from '../Common/Button';
 
 const AdminDashboard = () => {
   const [projects, setProjects] = useState([]);
@@ -14,6 +16,12 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('projects');
   const [taskViewMode, setTaskViewMode] = useState('list');
+  const [stats, setStats] = useState({
+    totalProjects: 0,
+    totalTasks: 0,
+    totalUsers: 0,
+    overdueTasks: 0,
+  });
 
   useEffect(() => {
     fetchData();
@@ -30,6 +38,18 @@ const AdminDashboard = () => {
       setProjects(projectsRes.data);
       setTasks(tasksRes.data);
       setUsers(usersRes.data);
+      
+      // Calculate stats
+      const overdueTasks = tasksRes.data.filter(task => {
+        return new Date(task.deadline) < new Date() && task.status !== 'Done';
+      }).length;
+      
+      setStats({
+        totalProjects: projectsRes.data.length,
+        totalTasks: tasksRes.data.length,
+        totalUsers: usersRes.data.length,
+        overdueTasks,
+      });
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -42,6 +62,7 @@ const AdminDashboard = () => {
       tasks: []
     };
     setProjects([...projects, projectWithTasks]);
+    setStats(prev => ({ ...prev, totalProjects: prev.totalProjects + 1 }));
   };
 
   const handleProjectUpdated = async (updatedProject) => {
@@ -59,27 +80,40 @@ const AdminDashboard = () => {
       await api.delete(`/projects/${projectId}/tasks`);
       setProjects(projects.filter(p => p._id !== projectId));
       setTasks(tasks.filter(t => t.projectId._id !== projectId));
+      setStats(prev => ({ ...prev, totalProjects: prev.totalProjects - 1 }));
     } catch (error) {
       console.error('Error deleting project tasks:', error);
       setProjects(projects.filter(p => p._id !== projectId));
       setTasks(tasks.filter(t => t.projectId._id !== projectId));
+      setStats(prev => ({ ...prev, totalProjects: prev.totalProjects - 1 }));
     }
   };
 
   const handleTaskCreated = (newTask) => {
     setTasks([...tasks, newTask]);
+    setStats(prev => ({ ...prev, totalTasks: prev.totalTasks + 1 }));
   };
 
   const handleTaskUpdated = (updatedTask) => {
     setTasks(tasks.map(t => t._id === updatedTask._id ? updatedTask : t));
+    
+    // Update overdue tasks count if status changed to Done
+    if (updatedTask.status === 'Done') {
+      const overdueTasks = tasks.filter(task => {
+        return new Date(task.deadline) < new Date() && task.status !== 'Done';
+      }).length;
+      setStats(prev => ({ ...prev, overdueTasks }));
+    }
   };
 
   const handleTaskDeleted = (taskId) => {
     setTasks(tasks.filter(t => t._id !== taskId));
+    setStats(prev => ({ ...prev, totalTasks: prev.totalTasks - 1 }));
   };
 
   const handleUserCreated = (newUser) => {
     setUsers([...users, newUser]);
+    setStats(prev => ({ ...prev, totalUsers: prev.totalUsers + 1 }));
   };
 
   const handleUserDeleted = (userId) => {
@@ -88,6 +122,7 @@ const AdminDashboard = () => {
       ...project,
       assignedUsers: project.assignedUsers.filter(user => user._id !== userId)
     })));
+    setStats(prev => ({ ...prev, totalUsers: prev.totalUsers - 1 }));
   };
 
   if (loading) {
@@ -102,13 +137,46 @@ const AdminDashboard = () => {
     <div className="max-w-7xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="mt-2 text-gray-600">Manage projects, tasks, and users in one place</p>
+        <p className="mt-2 text-gray-600">Manage projects, tasks, and users</p>
       </div>
       
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card className="text-center">
+          <div className="p-4">
+            <div className="text-3xl font-bold text-indigo-600">{stats.totalProjects}</div>
+            <div className="text-sm text-gray-600 mt-1">Total Projects</div>
+          </div>
+        </Card>
+        
+        <Card className="text-center">
+          <div className="p-4">
+            <div className="text-3xl font-bold text-purple-600">{stats.totalTasks}</div>
+            <div className="text-sm text-gray-600 mt-1">Total Tasks</div>
+          </div>
+        </Card>
+        
+        <Card className="text-center">
+          <div className="p-4">
+            <div className="text-3xl font-bold text-green-600">{stats.totalUsers}</div>
+            <div className="text-sm text-gray-600 mt-1">Total Users</div>
+          </div>
+        </Card>
+        
+        <Card className="text-center">
+          <div className="p-4">
+            <div className="text-3xl font-bold text-red-600">{stats.overdueTasks}</div>
+            <div className="text-sm text-gray-600 mt-1">Overdue Tasks</div>
+          </div>
+        </Card>
+      </div>
+      
+      <Card>
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex">
             <button
+
+            
               onClick={() => setActiveTab('projects')}
               className={`py-4 px-6 text-sm font-medium border-b-2 ${
                 activeTab === 'projects'
@@ -165,28 +233,22 @@ const AdminDashboard = () => {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <h3 className="text-lg font-medium text-gray-900">All Tasks</h3>
                 <div className="flex rounded-md shadow-sm">
-                  <button
-                    type="button"
+                  <Button
+                    variant={taskViewMode === 'list' ? 'primary' : 'outline'}
+                    size="sm"
                     onClick={() => setTaskViewMode('list')}
-                    className={`px-4 py-2 text-sm font-medium rounded-l-md ${
-                      taskViewMode === 'list'
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-                    }`}
+                    className="rounded-r-none"
                   >
                     List View
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
+                    variant={taskViewMode === 'byUser' ? 'primary' : 'outline'}
+                    size="sm"
                     onClick={() => setTaskViewMode('byUser')}
-                    className={`px-4 py-2 text-sm font-medium rounded-r-md ${
-                      taskViewMode === 'byUser'
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-                    }`}
+                    className="rounded-l-none"
                   >
                     Group by User
-                  </button>
+                  </Button>
                 </div>
               </div>
               
@@ -215,7 +277,7 @@ const AdminDashboard = () => {
             />
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

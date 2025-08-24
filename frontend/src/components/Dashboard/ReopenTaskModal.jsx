@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Button from '../Common/Button';
 
 const ReopenTaskModal = ({ isOpen, onClose, onConfirm, task, loading }) => {
   const [newDeadline, setNewDeadline] = useState('');
@@ -59,21 +60,21 @@ const ReopenTaskModal = ({ isOpen, onClose, onConfirm, task, loading }) => {
             </div>
             
             <div className="flex justify-end space-x-3">
-              <button 
+              <Button 
                 type="button" 
+                variant="secondary"
                 onClick={onClose}
                 disabled={loading}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
               >
                 Cancel
-              </button>
-              <button 
+              </Button>
+              <Button 
                 type="submit" 
                 disabled={loading || !newDeadline}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+                loading={loading}
               >
-                {loading ? 'Reopening...' : 'Reopen Task'}
-              </button>
+                Reopen Task
+              </Button>
             </div>
           </form>
         </div>

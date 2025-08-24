@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import api from '../../services/api';
 import Modal from '../Common/Modal';
+import Card from '../Common/Card';
+import Button from '../Common/Button';
 
 const UserManagement = ({ users, onUserCreated, onUserDeleted }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -69,12 +71,9 @@ const UserManagement = ({ users, onUserCreated, onUserDeleted }) => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h3 className="text-lg font-medium text-gray-900">User Management</h3>
-        <button 
-          onClick={openCreateModal}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        >
+        <Button onClick={openCreateModal}>
           + Add New User
-        </button>
+        </Button>
       </div>
 
       {error && <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">{error}</div>}
@@ -147,21 +146,20 @@ const UserManagement = ({ users, onUserCreated, onUserDeleted }) => {
           </div>
           
           <div className="flex justify-end space-x-3 pt-4">
-            <button 
+            <Button 
               type="button" 
+              variant="secondary"
               onClick={closeCreateModal}
               disabled={loading}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
             >
               Cancel
-            </button>
-            <button 
+            </Button>
+            <Button 
               type="submit" 
-              disabled={loading}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+              loading={loading}
             >
-              {loading ? 'Creating...' : 'Create User'}
-            </button>
+              Create User
+            </Button>
           </div>
         </form>
       </Modal>
@@ -169,62 +167,40 @@ const UserManagement = ({ users, onUserCreated, onUserDeleted }) => {
       <div>
         <h4 className="text-md font-medium text-gray-900 mb-4">All Users ({users.length})</h4>
         {users.length === 0 ? (
-          <div className="text-center py-8 bg-white rounded-lg border border-gray-200">
+          <div className="text-center py-8">
             <div className="text-gray-400 text-4xl mb-3">👥</div>
             <p className="text-gray-500">No users found.</p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      User
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Role
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map(user => (
-                    <tr key={user._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="h-10 w-10 flex items-center justify-center bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full text-white font-semibold">
-                            {user.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                            <div className="text-sm text-gray-500">{user.email}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <button 
-                          onClick={() => handleDeleteUser(user._id, user.name)} 
-                          disabled={loading}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {users.map(user => (
+              <Card key={user._id} className="p-4">
+                <div className="flex items-center mb-4">
+                  <div className="h-12 w-12 flex items-center justify-center bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full text-white font-semibold">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-lg font-semibold text-gray-900">{user.name}</h3>
+                    <p className="text-gray-600">{user.email}</p>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {user.role}
+                  </span>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleDeleteUser(user._id, user.name)} 
+                    loading={loading}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </Card>
+            ))}
           </div>
         )}
       </div>

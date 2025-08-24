@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import api from '../../services/api';
+import Card from '../Common/Card';
+import Button from '../Common/Button';
 
 const ProjectList = ({ projects, users, onProjectUpdated, onProjectDeleted }) => {
   const [editingProject, setEditingProject] = useState(null);
@@ -109,7 +111,7 @@ const ProjectList = ({ projects, users, onProjectUpdated, onProjectDeleted }) =>
       ) : (
         <div className="space-y-4">
           {projects.map(project => (
-            <div key={project._id} className={`bg-white p-4 rounded-lg shadow-sm border ${hasOverdueTasks(project) ? 'border-red-300' : 'border-gray-200'}`}>
+            <Card key={project._id} className={`${hasOverdueTasks(project) ? 'border-red-300' : ''}`}>
               {editingProject === project._id ? (
                 <div className="space-y-4">
                   <input
@@ -125,20 +127,19 @@ const ProjectList = ({ projects, users, onProjectUpdated, onProjectDeleted }) =>
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                   <div className="flex space-x-2">
-                    <button
+                    <Button
                       onClick={() => handleSave(project._id)}
-                      disabled={loading}
-                      className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+                      loading={loading}
                     >
-                      {loading ? 'Saving...' : 'Save'}
-                    </button>
-                    <button
+                      Save
+                    </Button>
+                    <Button
+                      variant="secondary"
                       onClick={cancelEdit}
                       disabled={loading}
-                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : assigningUsers === project._id ? (
@@ -161,20 +162,19 @@ const ProjectList = ({ projects, users, onProjectUpdated, onProjectDeleted }) =>
                     ))}
                   </div>
                   <div className="flex space-x-2">
-                    <button
+                    <Button
                       onClick={() => handleUserAssignment(project._id)}
-                      disabled={loading}
-                      className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+                      loading={loading}
                     >
-                      {loading ? 'Assigning...' : 'Assign Users'}
-                    </button>
-                    <button
+                      Assign Users
+                    </Button>
+                    <Button
+                      variant="secondary"
                       onClick={cancelAssignment}
                       disabled={loading}
-                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (
@@ -193,28 +193,31 @@ const ProjectList = ({ projects, users, onProjectUpdated, onProjectDeleted }) =>
                     <p>Assigned users: {project.assignedUsers.map(u => u.name).join(', ') || 'None'}</p>
                   </div>
                   <div className="flex space-x-2">
-                    <button
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={() => handleEdit(project)}
-                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                     >
                       Edit
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleAssignUsers(project)}
-                      className="px-3 py-1 bg-blue-100 text-blue-700 rounded-md text-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
                       Assign Users
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
                       onClick={() => handleDelete(project._id)}
-                      className="px-3 py-1 bg-red-100 text-red-700 rounded-md text-sm hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                     >
                       Delete
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
-            </div>
+            </Card>
           ))}
         </div>
       )}

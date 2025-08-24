@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import TaskList from './TaskList';
+import Card from '../Common/Card';
+import Button from '../Common/Button';
 
 const UserDashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
   const [activeTab, setActiveTab] = useState('tasks');
   const [loading, setLoading] = useState(true);
+  const [userStats, setUserStats] = useState({
+    totalTasks: 0,
+    completedTasks: 0,
+    overdueTasks: 0,
+    inProgressTasks: 0,
+  });
 
   useEffect(() => {
     fetchData();
@@ -21,6 +29,23 @@ const UserDashboard = () => {
       ]);
       setTasks(tasksRes.data);
       setProjects(projectsRes.data);
+      
+      // Calculate user stats
+      const userId = localStorage.getItem('userId');
+      const userTasks = tasksRes.data.filter(task => task.assignedUserId && task.assignedUserId._id === userId);
+      
+      const completedTasks = userTasks.filter(task => task.status === 'Done').length;
+      const overdueTasks = userTasks.filter(task => {
+        return new Date(task.deadline) < new Date() && task.status !== 'Done';
+      }).length;
+      const inProgressTasks = userTasks.filter(task => task.status === 'In Progress').length;
+      
+      setUserStats({
+        totalTasks: userTasks.length,
+        completedTasks,
+        overdueTasks,
+        inProgressTasks,
+      });
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -30,11 +55,29 @@ const UserDashboard = () => {
   // This function will be called when a task is deleted elsewhere
   const handleTaskUpdated = (updatedTask) => {
     setTasks(tasks.map(t => t._id === updatedTask._id ? updatedTask : t));
+    
+    // Update stats if task status changed
+    if (updatedTask.assignedUserId && updatedTask.assignedUserId._id === localStorage.getItem('userId')) {
+      const userTasks = tasks.filter(task => task.assignedUserId && task.assignedUserId._id === localStorage.getItem('userId'));
+      
+      const completedTasks = userTasks.filter(task => task.status === 'Done').length;
+      const overdueTasks = userTasks.filter(task => {
+        return new Date(task.deadline) < new Date() && task.status !== 'Done';
+      }).length;
+      const inProgressTasks = userTasks.filter(task => task.status === 'In Progress').length;
+      
+      setUserStats(prev => ({
+        ...prev,
+        completedTasks,
+        overdueTasks,
+        inProgressTasks,
+      }));
+    }
   };
 
   const handleTaskDeleted = (taskId) => {
-    // Remove the deleted task from the user's view
     setTasks(tasks.filter(t => t._id !== taskId));
+    setUserStats(prev => ({ ...prev, totalTasks: prev.totalTasks - 1 }));
   };
 
   // Listen for custom events when tasks are deleted elsewhere
@@ -74,7 +117,38 @@ const UserDashboard = () => {
         <p className="mt-2 text-gray-600">Manage your tasks and projects</p>
       </div>
       
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card className="text-center">
+          <div className="p-4">
+            <div className="text-3xl font-bold text-indigo-600">{userStats.totalTasks}</div>
+            <div className="text-sm text-gray-600 mt-1">Total Tasks</div>
+          </div>
+        </Card>
+        
+        <Card className="text-center">
+          <div className="p-4">
+            <div className="text-3xl font-bold text-green-600">{userStats.completedTasks}</div>
+            <div className="text-sm text-gray-600 mt-1">Completed</div>
+          </div>
+        </Card>
+        
+        <Card className="text-center">
+          <div className="p-4">
+            <div className="text-3xl font-bold text-blue-600">{userStats.inProgressTasks}</div>
+            <div className="text-sm text-gray-600 mt-1">In Progress</div>
+          </div>
+        </Card>
+        
+        <Card className="text-center">
+          <div className="p-4">
+            <div className="text-3xl font-bold text-red-600">{userStats.overdueTasks}</div>
+            <div className="text-sm text-gray-600 mt-1">Overdue</div>
+          </div>
+        </Card>
+      </div>
+      
+      <Card>
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex">
             <button
@@ -134,7 +208,7 @@ const UserDashboard = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {userProjects.map(project => (
-                    <div key={project._id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 transition-all hover:shadow-md">
+                    <Card key={project._id} hover className="p-4">
                       <div className="flex justify-between items-start mb-3">
                         <h3 className="font-medium text-gray-900">{project.title}</h3>
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
@@ -146,14 +220,14 @@ const UserDashboard = () => {
                         <p>Created by: {project.createdBy.name}</p>
                         <p>Assigned users: {project.assignedUsers.map(u => u.name).join(', ')}</p>
                       </div>
-                    </div>
+                    </Card>
                   ))}
                 </div>
               )}
             </div>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

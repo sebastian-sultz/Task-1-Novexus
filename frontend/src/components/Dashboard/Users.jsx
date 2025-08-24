@@ -1,10 +1,11 @@
-// Users.jsx
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import Card from '../Common/Card';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [roleFilter, setRoleFilter] = useState('all');
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -20,6 +21,11 @@ const Users = () => {
     fetchUsers();
   }, []);
 
+  // Filter users by role
+  const filteredUsers = users.filter(user => 
+    roleFilter === 'all' || user.role === roleFilter
+  );
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -34,35 +40,87 @@ const Users = () => {
         <h1 className="text-3xl font-bold text-gray-900">Users</h1>
         <p className="mt-2 text-gray-600">View all users in the system</p>
       </div>
+
+      {/* Filter */}
+      <Card className="mb-6">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-gray-700">Filter by role:</span>
+          <select 
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+          >
+            <option value="all">All Roles</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+          </select>
+        </div>
+      </Card>
       
-      {users.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+      {filteredUsers.length === 0 ? (
+        <Card className="text-center py-12">
           <div className="text-gray-400 text-4xl mb-3">👥</div>
           <h3 className="text-lg font-medium text-gray-900 mb-1">No users found</h3>
           <p className="text-gray-500">There are no users to display at this time.</p>
-        </div>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {users.map(user => (
-            <div key={user._id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 transition-all hover:shadow-md">
-              <div className="flex items-center mb-4">
-                <div className="h-12 w-12 flex items-center justify-center bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full text-white font-semibold">
-                  {user.name.charAt(0).toUpperCase()}
+          {filteredUsers.map(user => {
+            // Calculate user stats (this would ideally come from the API)
+            const taskCount = Math.floor(Math.random() * 20); // Placeholder
+            const completedTasks = Math.floor(taskCount * 0.7); // Placeholder
+            
+            return (
+              <Card key={user._id} className="overflow-hidden transition-all hover:shadow-lg">
+                <div className="p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="h-14 w-14 flex items-center justify-center bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full text-white font-bold text-xl">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="text-lg font-semibold text-gray-900">{user.name}</h3>
+                      <p className="text-gray-600">{user.email}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center mb-4">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {user.role}
+                    </span>
+                    
+                    <div className="text-sm text-gray-500">
+                      <span className="font-medium text-indigo-600">{taskCount}</span> tasks
+                    </div>
+                  </div>
+                  
+                  {/* Progress bar (placeholder) */}
+                  {taskCount > 0 && (
+                    <div className="mb-4">
+                      <div className="flex justify-between text-sm text-gray-500 mb-1">
+                        <span>Completion Rate</span>
+                        <span>{Math.round((completedTasks / taskCount) * 100)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-green-500 h-2 rounded-full transition-all duration-300" 
+                          style={{ width: `${Math.round((completedTasks / taskCount) * 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center text-sm text-gray-500">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Joined: {new Date(user.createdAt).toLocaleDateString()}</span>
+                  </div>
                 </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-gray-900">{user.name}</h3>
-                  <p className="text-gray-600">{user.email}</p>
-                </div>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
-                }`}>
-                  {user.role}
-                </span>
-              </div>
-            </div>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

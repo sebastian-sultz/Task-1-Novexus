@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from '../../context/AuthContext';
 import { FaUser } from "react-icons/fa";
 
 const StarBorder = ({ thickness, as: Component = 'div', children, className, ...props }) => {
@@ -45,6 +45,11 @@ const Header = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isMobileMenuOpen]);
+
+  // Don't render header if no user is logged in
+  if (!user) {
+    return null;
+  }
 
   const handleLogout = () => {
     logout();
@@ -146,8 +151,8 @@ const Header = () => {
           {/* Desktop auth buttons - wrapped original button with StarBorder */}
           <div className="hidden md:flex items-center gap-4">
             <NavLink
-              to={user ? "#" : "/login"}
-              onClick={user ? handleLogout : undefined}
+              to="#"
+              onClick={handleLogout}
             >
               <StarBorder
                 thickness={0.5}
@@ -159,7 +164,7 @@ const Header = () => {
                 </span>
                 <span className="relative z-10 flex items-center gap-2 text-indigo-600 px-5 py-2.5 font-semibold">
                   <FaUser className="h-5 w-5" />
-                  {user ? "Logout" : "Login"}
+                  Logout
                   <svg
                     className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform"
                     fill="none"
@@ -181,7 +186,7 @@ const Header = () => {
           {/* Mobile controls */}
           <div className="flex md:hidden items-center gap-3">
             <button
-              onClick={user ? handleLogout : () => navigate("/login")}
+              onClick={handleLogout}
               className="inline-flex items-center p-2 bg-indigo-600 text-white font-semibold rounded-full hover:shadow-lg transition-all group relative overflow-hidden hover:bg-indigo-700"
             >
               <span className="relative z-10 flex items-center">

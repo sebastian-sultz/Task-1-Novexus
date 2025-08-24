@@ -18,8 +18,8 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <Header />
-        <main className="pt-28 pb-10 px-4 md:px-6 lg:px-8">
+        {user && <Header />}
+        <main className={user ? 'pt-28 pb-10 px-4 md:px-6 lg:px-8' : 'min-h-screen'}>
           <Routes>
             <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
             <Route path="/register" element={!user ? <Register /> : <Navigate to="/dashboard" />} />
