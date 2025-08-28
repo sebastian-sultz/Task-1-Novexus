@@ -63,6 +63,7 @@ A modern code editor (e.g., VS Code)
 ## 📦 Installation
 
 Clone the repo and install dependencies:
+---
 For Backend:
 ```bash
 git clone https://github.com/sebastian-sultz/Task-1-Novexus.git
@@ -116,5 +117,3 @@ Adarsh Tripathi
 💻 GitHub
 
 ---
-
-*Built with ❤️ using modern web technologies*
