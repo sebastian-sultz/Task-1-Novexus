@@ -9,6 +9,11 @@ const {
 } = require('../controllers/projectController');
 const { protect } = require('../middleware/auth');
 
+
+const Project = require('../models/Project'); // ✅ Add this import
+const Task = require('../models/Task');       // ✅ Add this import
+
+
 const router = express.Router();
 
 router.route('/')
