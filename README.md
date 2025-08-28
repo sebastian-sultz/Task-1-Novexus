@@ -112,8 +112,8 @@ Fork the repository, create a branch, make your changes, and submit a pull reque
 ## 📜 License
 
 **Project Management Tool MVP**  
-Adarsh Tripathi
-🔗 LinkedIn
-💻 GitHub
+**Adarsh Tripathi**  
+🔗 [LinkedIn](https://linkedin.com/in/adarsh-tripathi-321b7a257)  
+💻 [GitHub](https://github.com/sebastian-sultz)
 
 ---
